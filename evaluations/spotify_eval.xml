@@ -1,0 +1,326 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<evaluations>
+  <description>
+    Comprehensive evaluation scenarios for Spotify Playlist MCP Server.
+    Tests core playlist management, track discovery, similarity engine,
+    and complex multi-step workflows.
+  </description>
+
+  <evaluation id="eval_001">
+    <name>Basic Playlist Creation and Population</name>
+    <description>Test creating a new playlist and adding tracks from search results</description>
+    <scenario>
+      You want to create a new workout playlist called "Morning Energy" and add some
+      high-energy tracks. First search for "Eye of the Tiger" by Survivor, then create
+      the playlist, and finally add the track to it.
+    </scenario>
+    <expected_steps>
+      1. Search for tracks using spotify_search_tracks with query "Eye of the Tiger Survivor"
+      2. Create a new playlist using spotify_create_playlist with name "Morning Energy"
+      3. Add the track to the playlist using spotify_add_tracks_to_playlist with the track URI
+    </expected_steps>
+    <success_criteria>
+      - Playlist is created successfully with the correct name
+      - Track is found in search results
+      - Track is added to the playlist
+      - All operations return success messages
+    </success_criteria>
+  </evaluation>
+
+  <evaluation id="eval_002">
+    <name>Similarity-Based Playlist Creation with Euclidean Strategy</name>
+    <description>Create a playlist of similar tracks using the similarity engine</description>
+    <scenario>
+      A user loves the song "Bohemian Rhapsody" by Queen and wants to create a playlist
+      of 25 similar tracks from the Spotify catalog. Use the default euclidean similarity
+      strategy to find tracks with similar audio characteristics and automatically create
+      a playlist called "Like Bohemian Rhapsody".
+    </scenario>
+    <expected_steps>
+      1. Search for "Bohemian Rhapsody" by Queen to get the track ID
+      2. Use spotify_find_similar_tracks with:
+         - track_id from search
+         - strategy: euclidean
+         - scope: catalog
+         - limit: 25
+         - action: create_playlist
+         - playlist_name: "Like Bohemian Rhapsody"
+    </expected_steps>
+    <success_criteria>
+      - Track is found successfully
+      - Similarity search returns 25 tracks
+      - Playlist is created with all 25 tracks
+      - Response includes playlist URL
+    </success_criteria>
+  </evaluation>
+
+  <evaluation id="eval_003">
+    <name>High-Energy Workout Playlist with Energy Match Strategy</name>
+    <description>Create a workout playlist using energy-focused similarity</description>
+    <scenario>
+      A user wants to create a high-energy workout playlist based on the song "Thunderstruck"
+      by AC/DC. They want 30 tracks that match the energy and danceability of this song,
+      using the energy_match strategy which prioritizes those specific audio features.
+    </scenario>
+    <expected_steps>
+      1. Search for "Thunderstruck AC/DC" to get track ID
+      2. Use spotify_find_similar_tracks with:
+         - track_id from search
+         - strategy: energy_match
+         - scope: catalog
+         - limit: 30
+         - action: create_playlist
+         - playlist_name: "High Energy Workout"
+    </expected_steps>
+    <success_criteria>
+      - Track is found successfully
+      - 30 similar tracks are found using energy_match strategy
+      - Playlist is created automatically
+      - Tracks should have similar energy and danceability values
+    </success_criteria>
+  </evaluation>
+
+  <evaluation id="eval_004">
+    <name>Genre Filtering Within Existing Playlist</name>
+    <description>Filter a playlist to find tracks matching a specific genre</description>
+    <scenario>
+      A user has a "Discover Weekly" playlist and wants to find all tracks in it that
+      match the genre of "indie rock". They want to create a new playlist with just
+      those genre-matching tracks.
+    </scenario>
+    <expected_steps>
+      1. Get user's playlists using spotify_get_user_playlists to find Discover Weekly
+      2. Use spotify_find_similar_tracks with:
+         - track_id of a known indie rock track (or search for one first)
+         - strategy: genre_match
+         - scope: playlist
+         - scope_id: Discover Weekly playlist ID
+         - limit: 20
+         - action: create_playlist
+         - playlist_name: "Indie Rock from Discover Weekly"
+    </expected_steps>
+    <success_criteria>
+      - Discover Weekly playlist is found
+      - Genre matching finds tracks successfully
+      - New playlist is created with genre-filtered tracks
+      - Tracks share similar genres
+    </success_criteria>
+  </evaluation>
+
+  <evaluation id="eval_005">
+    <name>Mood-Based Playlist with Custom Weights</name>
+    <description>Create a playlist using weighted similarity emphasizing specific features</description>
+    <scenario>
+      A user wants to create a calm, acoustic playlist for studying. They want tracks
+      similar to "Skinny Love" by Bon Iver, but they want to heavily prioritize
+      valence (mood) and acousticness, with less emphasis on other features.
+      Use custom weights: valence=5.0, acousticness=5.0, energy=0.5, others=1.0.
+    </scenario>
+    <expected_steps>
+      1. Search for "Skinny Love Bon Iver" to get track ID
+      2. Use spotify_find_similar_tracks with:
+         - track_id from search
+         - strategy: weighted
+         - weights: {valence: 5.0, acousticness: 5.0, energy: 0.5}
+         - scope: catalog
+         - limit: 25
+         - action: create_playlist
+         - playlist_name: "Calm Acoustic Study Mix"
+    </expected_steps>
+    <success_criteria>
+      - Track is found successfully
+      - Weighted similarity calculation is applied correctly
+      - 25 tracks are found and added to new playlist
+      - Tracks should have similar valence and acousticness values
+    </success_criteria>
+  </evaluation>
+
+  <evaluation id="eval_006">
+    <name>Audio Feature Analysis and Comparison</name>
+    <description>Analyze and compare audio features of multiple tracks</description>
+    <scenario>
+      A user wants to understand the audio characteristics of three different tracks:
+      "Happy" by Pharrell Williams, "Someone Like You" by Adele, and "Smells Like Teen Spirit"
+      by Nirvana. Get the audio features for all three tracks to compare their energy,
+      valence, and tempo.
+    </scenario>
+    <expected_steps>
+      1. Search for each track to get their track IDs
+      2. Use spotify_get_audio_features with the list of all three track IDs
+      3. Compare the returned audio features
+    </expected_steps>
+    <success_criteria>
+      - All three tracks are found successfully
+      - Audio features are retrieved for all tracks
+      - Features include energy, valence, tempo, danceability, etc.
+      - Response format allows for comparison
+    </success_criteria>
+  </evaluation>
+
+  <evaluation id="eval_007">
+    <name>Recommendations with Audio Feature Tuning</name>
+    <description>Get recommendations with specific audio feature constraints</description>
+    <scenario>
+      A user wants to discover new high-energy, happy dance music. They want recommendations
+      that have energy between 0.7-1.0, danceability between 0.6-1.0, and valence (happiness)
+      above 0.7. Use electronic and pop as seed genres, and limit to 20 tracks.
+    </scenario>
+    <expected_steps>
+      1. Use spotify_get_recommendations with:
+         - seed_genres: ["electronic", "pop"]
+         - min_energy: 0.7
+         - min_danceability: 0.6
+         - min_valence: 0.7
+         - limit: 20
+    </expected_steps>
+    <success_criteria>
+      - 20 recommendations are returned
+      - All tracks match the specified audio feature constraints
+      - Tracks are from electronic/pop genres
+      - Response includes track details
+    </success_criteria>
+  </evaluation>
+
+  <evaluation id="eval_008">
+    <name>Finding Similar Tracks Within User's Saved Library</name>
+    <description>Search for similar tracks within the user's own saved music</description>
+    <scenario>
+      A user just discovered they love "Mr. Brightside" by The Killers and wants to find
+      similar tracks from their own saved music library. They want to add these similar
+      tracks to an existing playlist called "My Favorites".
+    </scenario>
+    <expected_steps>
+      1. Search for "Mr. Brightside The Killers" to get track ID
+      2. Get user's playlists to find "My Favorites" playlist ID
+      3. Use spotify_find_similar_tracks with:
+         - track_id from search
+         - strategy: euclidean
+         - scope: saved_tracks
+         - limit: 15
+         - action: add_to_playlist
+         - target_playlist_id: My Favorites playlist ID
+    </expected_steps>
+    <success_criteria>
+      - Track is found successfully
+      - Similar tracks are found in user's saved library
+      - Tracks are added to existing "My Favorites" playlist
+      - Response confirms number of tracks added
+    </success_criteria>
+  </evaluation>
+
+  <evaluation id="eval_009">
+    <name>Rhythm-Based Running Playlist</name>
+    <description>Create a running playlist with consistent tempo using rhythm_match strategy</description>
+    <scenario>
+      A user wants to create a running playlist with songs around 180 BPM (matching their
+      running cadence). They want to use "Don't Stop Me Now" by Queen as the reference
+      track and find 40 songs with similar tempo using the rhythm_match strategy.
+    </scenario>
+    <expected_steps>
+      1. Search for "Don't Stop Me Now Queen" to get track ID
+      2. Optional: Get audio features to verify tempo is around 180 BPM
+      3. Use spotify_find_similar_tracks with:
+         - track_id from search
+         - strategy: rhythm_match
+         - scope: catalog
+         - limit: 40
+         - action: create_playlist
+         - playlist_name: "180 BPM Running Mix"
+    </expected_steps>
+    <success_criteria>
+      - Track is found successfully
+      - Rhythm matching finds 40 tracks with similar tempo
+      - Playlist is created automatically
+      - Tracks should have tempo values close to the reference track
+    </success_criteria>
+  </evaluation>
+
+  <evaluation id="eval_010">
+    <name>Complex Multi-Step Playlist Curation Workflow</name>
+    <description>Complete workflow: browse, analyze, filter, and create curated playlist</description>
+    <scenario>
+      A user wants to create the ultimate chill evening playlist. The workflow:
+      1. Browse their existing playlists to find a "Chill Vibes" playlist
+      2. Get tracks from that playlist to see what's in it
+      3. Pick a favorite track from the list
+      4. Get audio features for that track to understand its characteristics
+      5. Find similar tracks using mood_match strategy (focusing on valence and acousticness)
+      6. Create a new playlist called "Ultimate Chill Evening" with 30 similar tracks
+      7. Verify the playlist was created by listing user playlists again
+    </scenario>
+    <expected_steps>
+      1. spotify_get_user_playlists to browse available playlists
+      2. spotify_get_playlist_tracks to see tracks in "Chill Vibes"
+      3. spotify_get_audio_features for a selected track to analyze it
+      4. spotify_find_similar_tracks with:
+         - track_id from selected track
+         - strategy: mood_match
+         - scope: catalog
+         - limit: 30
+         - action: create_playlist
+         - playlist_name: "Ultimate Chill Evening"
+      5. spotify_get_user_playlists again to verify new playlist appears
+    </expected_steps>
+    <success_criteria>
+      - User can browse and find existing playlists
+      - Track list is retrieved successfully
+      - Audio features provide insight into track characteristics
+      - Mood-based similarity finds appropriate tracks
+      - New playlist is created with 30 tracks
+      - New playlist appears in user's playlist list
+      - All operations complete successfully in sequence
+    </success_criteria>
+  </evaluation>
+
+  <evaluation id="eval_011">
+    <name>Artist-Style Based Discovery</name>
+    <description>Create a playlist based on an artist's overall style</description>
+    <scenario>
+      A user loves Radiohead's style and wants to discover 25 tracks that sound similar
+      to their overall artistic style (not just one song). Use artist-based similarity
+      to analyze Radiohead's catalog and find similar tracks.
+    </scenario>
+    <expected_steps>
+      1. Search for "Radiohead" to find artist (may need track search then extract artist ID)
+      2. Use spotify_find_similar_tracks with:
+         - artist_id for Radiohead
+         - strategy: cosine
+         - scope: catalog
+         - limit: 25
+         - action: create_playlist
+         - playlist_name: "Artists Like Radiohead"
+    </expected_steps>
+    <success_criteria>
+      - Radiohead artist is identified
+      - Similarity engine analyzes artist's style
+      - 25 similar tracks are found
+      - Playlist is created successfully
+    </success_criteria>
+  </evaluation>
+
+  <evaluation id="eval_012">
+    <name>Pagination and Large Result Handling</name>
+    <description>Test pagination when working with large playlists or search results</description>
+    <scenario>
+      A user has a very large playlist with 200+ tracks and wants to browse through all
+      of them in batches. They want to see tracks 50-100 (using offset and limit).
+      Then they want to search for "love songs" which returns hundreds of results,
+      and page through the first 3 pages (20 tracks per page).
+    </scenario>
+    <expected_steps>
+      1. spotify_get_user_playlists to find the large playlist
+      2. spotify_get_playlist_tracks with offset=50, limit=50
+      3. spotify_search_tracks with query="love songs", limit=20, offset=0 (page 1)
+      4. spotify_search_tracks with query="love songs", limit=20, offset=20 (page 2)
+      5. spotify_search_tracks with query="love songs", limit=20, offset=40 (page 3)
+    </expected_steps>
+    <success_criteria>
+      - Pagination works correctly for playlist tracks
+      - Offset and limit parameters are respected
+      - Search pagination returns different results for each page
+      - has_more flag indicates if more results available
+      - No duplicate tracks across pages
+    </success_criteria>
+  </evaluation>
+
+</evaluations>
