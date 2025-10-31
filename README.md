@@ -2,6 +2,10 @@
 
 A Model Context Protocol server for creating playlists on the fly with natural language, including using one of several similarity methods for similar tracks.
 
+<a href="https://glama.ai/mcp/servers/@kylestratis/spotify-mcp">
+  <img width="380" height="200" src="https://glama.ai/mcp/servers/@kylestratis/spotify-mcp/badge" alt="Spotify Playlist Server MCP server" />
+</a>
+
 This was built to scratch two personal itches:
 1. To build playlists using natural language and with one of several similarity metrics. The ideal would be ephemeral playlists, but alas.
 2. To play with the new Claude skills and see how much it aids in AI-assisted coding. Verdict: It may chew up tokens but works very well.
